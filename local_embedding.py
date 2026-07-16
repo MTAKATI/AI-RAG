@@ -76,7 +76,7 @@ class LocalEmbedding:
         """
         return self.store.search(question, k=k)
     
-    def get_content(self, question: str, k: int = 3) -> str:
+    def get_context(self, question: str, k: int = 3) -> str:
         """
         Retrieves the content of top-k documents formatted as a single markdown string.
         """

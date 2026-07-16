@@ -127,8 +127,10 @@ class AiModel():
         formatted = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         inputs = self.tokenizer(formatted, return_tensors="pt").to(self.model.device)
 
+        # ... (Your tokenization and setup code above stays the same) ...
+
         streamer = TextIteratorStreamer(
-            self.tokenizer, skip_prompt=True, skip_special_tokens=True, timeout=30.0
+            self.tokenizer, skip_prompt=True, skip_special_tokens=True, timeout=None
         )
 
         thread = Thread(
@@ -138,10 +140,19 @@ class AiModel():
         )
         thread.start()
 
-        for chunk in streamer:
-            yield chunk
-
-        thread.join()
+        # Safely pull tokens from the streamer
+        try:
+            for chunk in streamer:
+                yield chunk
+        except Exception as e:
+            # Check if the background thread died unexpectedly (e.g., OOM crash)
+            if not thread.is_alive():
+                yield "\n\n⚠️ **Error:** The local LLM crashed during generation (likely out of memory on your GPU/CPU). Try closing other apps or using a smaller document."
+            else:
+                yield f"\n\n⚠️ **Generation Timeout/Error:** {str(e)}"
+        finally:
+            # Ensure the background thread is closed cleanly
+            thread.join(timeout=1.0)
 
 
     def full_prompt_for_rag(self, relevent_sections, question_prompt):
