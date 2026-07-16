@@ -41,7 +41,7 @@ class PdfReader:
             self.extract_text()
         return self.pages_text[start:end]
     
-    def get_paragraph(self):
+    def get_paragraphs(self):
         """
         Splits the normalized text into clean, individual paragraphs.
         """
@@ -58,4 +58,4 @@ if __name__ == "__main__":
     print("\n--- First 100 characters ---")
     print(pdf_reader.extract_small_portion_of_the_pdf(start=0, end=100))
     print("\n--- First 3 paragraphs ---")
-    print(pdf_reader.get_paragraph()[:3])
+    print(pdf_reader.get_paragraphs()[:3])
